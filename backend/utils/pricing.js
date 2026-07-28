@@ -7,6 +7,7 @@ const CUSTOMER_PLATFORM_FEE = Number(process.env.CUSTOMER_PLATFORM_FEE) || 3; //
 
 const calculateDeliveryFee = (itemsTotal) => {
   // Simple distance-agnostic flat/graduated fee for demo purposes.
+  // Thresholds are inclusive: exactly 500 pays 20, exactly 200 pays 30.
   if (itemsTotal >= 500) return 20;
   if (itemsTotal >= 200) return 30;
   return 40;
