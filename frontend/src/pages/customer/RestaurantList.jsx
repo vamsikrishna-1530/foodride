@@ -24,12 +24,22 @@ const RestaurantList = () => {
   const [restaurants, setRestaurants] = useState([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   const fetchRestaurants = async (q) => {
     setLoading(true);
-    const { data } = await client.get('/restaurants', { params: q ? { search: q } : {} });
-    setRestaurants(data);
-    setLoading(false);
+    try {
+      const { data } = await client.get('/restaurants', { params: q ? { search: q } : {} });
+      setRestaurants(Array.isArray(data) ? data : []);
+      setError('');
+    } catch (err) {
+      // Never let the rejection escape: an unhandled promise rejection also left
+      // `loading` stuck at true, which pinned the UI on the spinner forever.
+      setRestaurants([]);
+      setError('Could not load restaurants. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -61,6 +71,8 @@ const RestaurantList = () => {
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 6 }}>
           <CircularProgress />
         </Box>
+      ) : error ? (
+        <Typography color="error.main">{error}</Typography>
       ) : restaurants.length === 0 ? (
         <Typography color="text.secondary">No restaurants found.</Typography>
       ) : (
