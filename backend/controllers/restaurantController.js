@@ -1,11 +1,15 @@
 const Restaurant = require('../models/Restaurant');
 const MenuItem = require('../models/MenuItem');
+const { escapeRegex } = require('../utils/escapeRegex');
 
 const listRestaurants = async (req, res, next) => {
   try {
     const { search } = req.query;
     const filter = {};
-    if (search) filter.name = { $regex: search, $options: 'i' };
+    // Treat the term as a literal substring: an unescaped `(` (or any other
+    // metacharacter) is an invalid regex and made this endpoint return 500.
+    const term = escapeRegex(search);
+    if (term) filter.name = { $regex: term, $options: 'i' };
     const restaurants = await Restaurant.find(filter).sort({ createdAt: -1 });
     res.json(restaurants);
   } catch (err) {
